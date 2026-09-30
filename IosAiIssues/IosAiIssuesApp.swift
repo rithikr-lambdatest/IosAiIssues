@@ -38,8 +38,8 @@ struct HomeView: View {
 
                 // ---- image-in-text: 2x2 grid of text-bearing images ----
                 HStack(spacing: 8) {
-                    Image("textImage1").resizable().scaledToFit()
-                        .accessibilityLabel("Promotional banner one")
+                    Image("hindiEnglishText").resizable().scaledToFit()
+                        .accessibilityLabel("Hindi and English mixed script text")
                         .accessibilityIdentifier("ai_text_image_1")
                     Image("textImage2").resizable().scaledToFit()
                         .accessibilityLabel("Promotional banner two")
@@ -50,8 +50,8 @@ struct HomeView: View {
                     Image("textImage3").resizable().scaledToFit()
                         .accessibilityLabel("Promotional banner three")
                         .accessibilityIdentifier("ai_text_image_3")
-                    Image("textImage4").resizable().scaledToFit()
-                        .accessibilityLabel("Promotional banner four")
+                    Image("japaneseText").resizable().scaledToFit()
+                        .accessibilityLabel("Japanese text")
                         .accessibilityIdentifier("ai_text_image_4")
                 }
                 .frame(height: 130)
