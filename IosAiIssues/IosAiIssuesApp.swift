@@ -11,12 +11,11 @@ import UIKit
 //    does NOT satisfy this rule, and having labels keeps the missing-label
 //    rules quiet so the scan stays focused on the AI findings.
 //
-// 2) meaningful-reading-order (WCAG 1.3.2/2.4.3): three numbered steps
-//    stacked vertically inside a UIKit container whose accessibilityElements
-//    is deliberately mis-ordered (Step 1 -> Step 3 -> Step 2) — the
-//    strongest traversal override on iOS. A cross-row scramble of
-//    explicitly numbered content breaks logical flow and matches none of
-//    the engine's intentional cases. At most one reading-order issue is
+// 2) meaningful-reading-order (WCAG 1.3.2/2.4.3): the violation lives in
+//    the VISUAL order itself (proven-detectable pattern, mirroring the
+//    Meaningful Sequence demo screen): price rendered above the product
+//    name, input above its label, playback controls above the song they
+//    control. No traversal overrides. At most one reading-order issue is
 //    reported per scan.
 // =====================================================================
 
@@ -57,12 +56,34 @@ struct HomeView: View {
                 }
                 .frame(height: 130)
 
-                // ---- meaningful-reading-order: scrambled numbered steps ----
-                Text("How to order")
-                    .font(.headline)
-                ScrambledStepsView()
-                    .frame(height: 150)
-                    .accessibilityIdentifier("ai_reading_order_block")
+                // ---- meaningful-reading-order: visually wrong semantic order ----
+                mroCard("V-01: Price Before Name", "Price rendered ABOVE the product name.") {
+                    Text("$79.99").font(.title).fontWeight(.bold)
+                        .accessibilityIdentifier("ai_mro_price")
+                    Text("Wireless Headphones").font(.subheadline)
+                        .accessibilityIdentifier("ai_mro_product")
+                }
+                mroCard("V-02: Input Before Label", "Text field rendered ABOVE its label.") {
+                    TextField("Enter here...", text: .constant(""))
+                        .textFieldStyle(.roundedBorder)
+                        .accessibilityIdentifier("ai_mro_email_input")
+                    Text("Email").font(.subheadline)
+                        .accessibilityIdentifier("ai_mro_email_label")
+                }
+                mroCard("V-03: Controls Before Song", "Playback controls rendered ABOVE the song title/artist.") {
+                    HStack(spacing: 8) {
+                        Button("Prev") {}.buttonStyle(.borderedProminent)
+                            .accessibilityIdentifier("ai_mro_prev")
+                        Button("Play") {}.buttonStyle(.borderedProminent)
+                            .accessibilityIdentifier("ai_mro_play")
+                        Button("Next") {}.buttonStyle(.borderedProminent)
+                            .accessibilityIdentifier("ai_mro_next")
+                    }
+                    Text("Bohemian Rhapsody").font(.headline)
+                        .accessibilityIdentifier("ai_mro_song")
+                    Text("Queen").font(.subheadline)
+                        .accessibilityIdentifier("ai_mro_artist")
+                }
             }
             .padding()
         }
@@ -70,28 +91,16 @@ struct HomeView: View {
     }
 }
 
-/// Three visually stacked steps whose accessibilityElements order is
-/// deliberately wrong: Step 1 -> Step 3 -> Step 2.
-struct ScrambledStepsView: UIViewRepresentable {
-    func makeUIView(context: Context) -> UIStackView {
-        func step(_ text: String, id: String) -> UILabel {
-            let label = UILabel()
-            label.text = text
-            label.accessibilityIdentifier = id
-            label.font = .preferredFont(forTextStyle: .body)
-            label.backgroundColor = UIColor(red: 0.93, green: 0.95, blue: 0.97, alpha: 1)
-            return label
-        }
-        let step1 = step("Step 1: Choose your product", id: "ai_step1")
-        let step2 = step("Step 2: Add to cart", id: "ai_step2")
-        let step3 = step("Step 3: Checkout", id: "ai_step3")
-
-        let stack = UIStackView(arrangedSubviews: [step1, step2, step3])
-        stack.axis = .vertical
-        stack.spacing = 8
-        // Visual order is 1, 2, 3 — traversal order is forced to 1, 3, 2.
-        stack.accessibilityElements = [step1, step3, step2]
-        return stack
+@ViewBuilder
+func mroCard(_ title: String, _ note: String,
+             @ViewBuilder content: () -> some View) -> some View {
+    VStack(alignment: .leading, spacing: 6) {
+        Text(title).font(.callout).fontWeight(.semibold)
+        Text(note).font(.caption)
+        content()
     }
-    func updateUIView(_ uiView: UIStackView, context: Context) {}
+    .padding(14)
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .background(Color(red: 0.93, green: 0.93, blue: 0.95))
+    .cornerRadius(10)
 }
